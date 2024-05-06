@@ -13,3 +13,4 @@ langchain_pinecone
 langchain-community
 langchain_text_splitters
 langchain_openai
+#pip install openai==0.28

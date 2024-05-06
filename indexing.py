@@ -22,15 +22,6 @@ def chunk_data(data, chunk_size=256):
     chunks = text_splitter.split_documents(data)
     return chunks
 
-def print_embedding_cost(texts):
-    import tiktoken
-    enc = tiktoken.encoding_for_model('text-embedding-3-small')
-    total_tokens = sum([len(enc.encode(page.page_content)) for page in texts])
-    # check prices here: https://openai.com/pricing
-    print(f'Total Tokens: {total_tokens}')
-    print(f'Embedding Cost in USD: {total_tokens / 1000 * 0.00002:.6f}')
-
-
 pc = pinecone.Pinecone()
 
 def insert_or_fetch_embeddings(index_name, chunks):
@@ -70,31 +61,62 @@ def insert_or_fetch_embeddings(index_name, chunks):
     return vector_store
 
 
-def ask_and_get_answer(vector_store, q, k=3):
-    from langchain.chains import RetrievalQA
-    from langchain_openai import ChatOpenAI
+# def ask_and_get_answer(vector_store, q, k=3):
+#     from langchain.chains import RetrievalQA
+#     from langchain_openai import ChatOpenAI
 
-    llm = ChatOpenAI(model='gpt-3.5-turbo', temperature=1)
+#     llm = ChatOpenAI(model='gpt-3.5-turbo', temperature=1)
 
-    retriever = vector_store.as_retriever(search_type='similarity', search_kwargs={'k': k})
+#     retriever = vector_store.as_retriever(search_type='similarity', search_kwargs={'k': k})
 
-    chain = RetrievalQA.from_chain_type(llm=llm, chain_type="stuff", retriever=retriever)
+#     chain = RetrievalQA.from_chain_type(llm=llm, chain_type="stuff", retriever=retriever)
     
-    answer = chain.invoke(q)
-    return answer
+#     answer = chain.invoke(q)
+#     return answer
 
 
-# import warnings
-# warnings.filterwarnings('ignore')
+# # import warnings
+# # warnings.filterwarnings('ignore')
 
-data = read_doc('Ministry of Electronics and Information Technology (MEITY)/')
+#data = read_doc('Ministry of Electronics and Information Technology (MEITY)/')
 
-chunks = chunk_data(data)
-# print(chunks[10].page_content)
+chunks = chunk_data(doc)
+# # print(chunks[10].page_content)
 
 index_name = 'askadocument'
 vector_store = insert_or_fetch_embeddings(index_name=index_name, chunks=chunks)
 
-q = 'What is the whole document about?'
-answer = ask_and_get_answer(vector_store, q)
-print(answer)
+# q = 'Attached Offices and Societies the Annual Report_2022-23 please'
+# answer = ask_and_get_answer(vector_store, q)
+# print(answer)
+from langchain_pinecone import PineconeVectorStore
+
+
+## Cosine Similarity Retreive Results from VectorDB
+def retrieve_query(query,k=2):
+    matching_results=vector_store.similarity_search(query,k=k)
+    return matching_results
+
+from langchain.chains.question_answering import load_qa_chain
+from langchain import OpenAI
+
+llm=OpenAI(model_name="gpt-3.5-turbo-instruct",temperature=0.5)
+chain=load_qa_chain(llm,chain_type="stuff")
+
+## Search answers from VectorDB
+def retrieve_answers(query):
+    doc_search=retrieve_query(query)
+    print(doc_search)
+    response=chain.run(input_documents=doc_search,question=query)
+    return response
+
+# our_query = "Please tell me some of the rules mentioned in GFR in bullet points"
+# answer= retrieve_answers(our_query)
+# print(answer)
+st.title("Ask your questions about Meity Annual reports")
+
+user_question = st.text_input("Ask your question:")
+
+if st.button("Get Answer"):
+    answer = retrieve_answers(user_question)
+    st.write("Answer:", answer)
