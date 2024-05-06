@@ -109,7 +109,20 @@ def retrieve_answers(query):
     print(doc_search)
     response=chain.run(input_documents=doc_search,question=query)
     return response
+# Sidebar contents
+with st.sidebar:
+    st.title('💬 LLM Chat App on Procurement Manuals and Amendment Compilations in GFR...')
+    st.markdown('''
+    ## About
+    This GPT helps in answering questions related to annual reports of MEITY from year 2017 to 2023
 
+
+
+    [Documents Repository](https://drive.google.com/drive/folders/12CviwBib5xdWy3pW5trrOJxPbZFht2cn?usp=sharing)
+ 
+    ''')
+    #add_vertical_space(5)
+    st.write('Made by LBSNAA for learning purpose](https://www.lbsnaa.gov.in/)')
 # our_query = "Please tell me some of the rules mentioned in GFR in bullet points"
 # answer= retrieve_answers(our_query)
 # print(answer)
