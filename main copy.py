@@ -8,20 +8,6 @@ from langchain.vectorstores import Pinecone
 from langchain.llms import OpenAI
 import streamlit as st
 
-
-# Sidebar contents
-with st.sidebar:
-    st.title('💬 LLM Chat App on Annual reports of Meity for different financial years')
-    st.markdown('''
-    ## About
-    This chatbot helps in answering questions related to Annual reports from year 2017-23
-
-    [Documents Repository](https://drive.google.com/drive/folders/12CviwBib5xdWy3pW5trrOJxPbZFht2cn?usp=drive_link)
- 
-    ''')
-    #add_vertical_space(5)
-    st.write('Made by LBSNAA for learning purpose](https://www.lbsnaa.gov.in/)')
-
 def read_doc(directory):
     file_loader=PyPDFDirectoryLoader(directory)
     documents=file_loader.load()
@@ -102,24 +88,13 @@ def ask_and_get_answer(vector_store, q, k=3):
 # warnings.filterwarnings('ignore')
 
 data = read_doc('Ministry of Electronics and Information Technology (MEITY)/')
-# print(data[1].page_content)
-# print(data[10].metadata)
-
-print(f'You have {len(data)} pages in your data')
-print(f'There are {len(data[20].page_content)} characters in the page')
 
 chunks = chunk_data(data)
-print(len(chunks))
 # print(chunks[10].page_content)
 
 index_name = 'askadocument'
 vector_store = insert_or_fetch_embeddings(index_name=index_name, chunks=chunks)
 
-
-st.title("Ask your questions about Procurement manual of Work or Goods or Consultancy or amendments in GFR(2017 to 2023)")
-
-user_question = st.text_input("Ask your question:")
-
-if st.button("Get Answer"):
-    answer = ask_and_get_answer(user_question)
-    st.write("Answer:", answer)
+q = 'What is the whole document about?'
+answer = ask_and_get_answer(vector_store, q)
+print(answer)
