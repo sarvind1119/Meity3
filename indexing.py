@@ -90,8 +90,8 @@ vector_store = insert_or_fetch_embeddings(index_name=index_name, chunks=chunks)
 # answer = ask_and_get_answer(vector_store, q)
 # print(answer)
 from langchain_pinecone import PineconeVectorStore
-
-
+embeddings = OpenAIEmbeddings(model='text-embedding-3-small', dimensions=1536)
+index = Pinecone.from_documents(doc, embeddings, index_name=index_name)
 ## Cosine Similarity Retreive Results from VectorDB
 def retrieve_query(query,k=2):
     matching_results=vector_store.similarity_search(query,k=k)
@@ -102,6 +102,50 @@ from langchain import OpenAI
 
 llm=OpenAI(model_name="gpt-3.5-turbo-instruct",temperature=0.5)
 chain=load_qa_chain(llm,chain_type="stuff")
+
+
+def ask_and_get_answer(vector_store, q, k=3):
+    from langchain.chains import RetrievalQA
+    from langchain_openai import ChatOpenAI
+
+    llm = ChatOpenAI(model='gpt-3.5-turbo', temperature=1)
+
+    retriever = vector_store.as_retriever(search_type='similarity', search_kwargs={'k': k})
+
+    chain = RetrievalQA.from_chain_type(llm=llm, chain_type="stuff", retriever=retriever)
+
+    answer = chain.invoke(q)
+    return answer
+import os
+
+from langchain.chat_models import ChatOpenAI
+from langchain.chains import RetrievalQA
+
+# completion llm
+llm = ChatOpenAI(
+    openai_api_key=os.environ.get('OPENAI_API_KEY'),
+    model_name='gpt-3.5-turbo',
+    temperature=0.0
+)
+
+qa = RetrievalQA.from_chain_type(
+    llm=llm,
+    chain_type="stuff",
+    retriever=vector_store.as_retriever()
+)
+
+
+from langchain.chains import RetrievalQAWithSourcesChain
+
+
+qa_with_sources = RetrievalQAWithSourcesChain.from_chain_type(
+    llm=llm,
+    chain_type="stuff",
+    retriever=vector_store.as_retriever()
+)
+
+
+#qa_with_sources(query)
 
 ## Search answers from VectorDB
 def retrieve_answers(query):
@@ -126,10 +170,24 @@ with st.sidebar:
 # our_query = "Please tell me some of the rules mentioned in GFR in bullet points"
 # answer= retrieve_answers(our_query)
 # print(answer)
+
+
+def get_similiar_docs(query,k=2,score=False):
+  if score:
+    similar_docs = index.similarity_search_with_score(query,k=k)
+  else:
+    similar_docs = index.similarity_search(query,k=k)
+  return similar_docs
+
+query = "How is India economy"
+similar_docs = get_similiar_docs(query)
+similar_docs
+
 st.title("Ask your questions about Meity Annual reports")
 
 user_question = st.text_input("Ask your question:")
 
 if st.button("Get Answer"):
-    answer = retrieve_answers(user_question)
+    answer = get_similiar_docs(user_question)
+    #answer = ask_and_get_answer(vector_store,user_question,k=3)
     st.write("Answer:", answer)
