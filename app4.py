@@ -50,7 +50,7 @@ vectorstore = Pinecone(
 )
 
 #querying using vectorstore.similarity_search
-query = "who was Arvind kejriwal?"
+#query = "who was Arvind kejriwal?"
 
 from langchain.chat_models import ChatOpenAI
 from langchain.chains import RetrievalQA
