@@ -83,7 +83,7 @@ def insert_or_fetch_embeddings(index_name, chunks):
 chunks = chunk_data(doc)
 # # print(chunks[10].page_content)
 
-index_name = 'askadocument'
+index_name = 'arvind1'
 vector_store = insert_or_fetch_embeddings(index_name=index_name, chunks=chunks)
 
 # q = 'Attached Offices and Societies the Annual Report_2022-23 please'
