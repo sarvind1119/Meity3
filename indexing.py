@@ -61,22 +61,22 @@ def insert_or_fetch_embeddings(index_name, chunks):
     return vector_store
 
 
-# def ask_and_get_answer(vector_store, q, k=3):
-#     from langchain.chains import RetrievalQA
-#     from langchain_openai import ChatOpenAI
+def ask_and_get_answer(vector_store, q, k=3):
+    from langchain.chains import RetrievalQA
+    from langchain_openai import ChatOpenAI
 
-#     llm = ChatOpenAI(model='gpt-3.5-turbo', temperature=1)
+    llm = ChatOpenAI(model='gpt-3.5-turbo', temperature=1)
 
-#     retriever = vector_store.as_retriever(search_type='similarity', search_kwargs={'k': k})
+    retriever = vector_store.as_retriever(search_type='similarity', search_kwargs={'k': k})
 
-#     chain = RetrievalQA.from_chain_type(llm=llm, chain_type="stuff", retriever=retriever)
+    chain = RetrievalQA.from_chain_type(llm=llm, chain_type="stuff", retriever=retriever)
     
-#     answer = chain.invoke(q)
-#     return answer
+    answer = chain.invoke(q)
+    return answer
 
 
-# # import warnings
-# # warnings.filterwarnings('ignore')
+# import warnings
+# warnings.filterwarnings('ignore')
 
 #data = read_doc('Ministry of Electronics and Information Technology (MEITY)/')
 
@@ -188,6 +188,6 @@ st.title("Ask your questions about Meity Annual reports")
 user_question = st.text_input("Ask your question:")
 
 if st.button("Get Answer"):
-    answer = get_similiar_docs(user_question)
+    answer = ask_and_get_answer(vector_store,user_question)
     #answer = ask_and_get_answer(vector_store,user_question,k=3)
     st.write("Answer:", answer)
